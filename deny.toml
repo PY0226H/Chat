@@ -1,0 +1,104 @@
+################################################################################
+# cargo-deny v0.18 参考模板（已合并自定义项）
+################################################################################
+
+#######################################
+# 依赖图相关选项
+#######################################
+[graph]
+# 如果仅针对特定目标构建，可在此列出；否则保持空数组即可
+targets = [
+    # "x86_64-unknown-linux-musl",
+    # { triple = "wasm32-unknown-unknown", features = ["atomics"] },
+]
+# 如需一次性打开所有 features，可改为 true，或在命令行加 --all-features
+all-features = false
+no-default-features = false
+#features = []
+
+#######################################
+# 输出格式
+#######################################
+[output]
+feature-depth = 1         # 依赖图中 feature 展开深度
+
+#######################################
+# 安全公告 (RustSec) 检查
+#######################################
+[advisories]
+#db-path  = "$CARGO_HOME/advisory-dbs"
+#db-urls  = ["https://github.com/rustsec/advisory-db"]
+
+# 保持和旧版本一致的 lint 级别
+unmaintained = "all"      # 不再维护的 crate
+yanked       = "warn"     # 已 yanked 的版本
+ignore = [
+    # "RUSTSEC-0000-0000",
+    # { id = "RUSTSEC-0000-0000", reason = "理由…" },
+    # "some-yanked-crate@0.1.1",
+]
+
+#######################################
+# 许可证检查
+#######################################
+[licenses]
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Unicode-DFS-2016",
+    "MPL-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "CC0-1.0",
+    "Unicode-3.0",
+]
+confidence-threshold = 0.8
+exceptions = [
+    # { crate = "adler32", allow = ["Zlib"] },
+]
+
+[licenses.private]
+ignore     = false
+registries = [
+    # "https://sekretz.com/registry",
+]
+
+#######################################
+# 重复版本 / 野生依赖等检查
+#######################################
+[bans]
+multiple-versions           = "warn"
+wildcards                   = "allow"
+highlight                   = "all"
+workspace-default-features  = "allow"
+external-default-features   = "allow"
+
+allow = [
+    # "ansi_term@0.11.0",
+]
+deny  = [
+    # "ansi_term@0.11.0",
+    # { crate = "ansi_term@0.11.0", reason = "必须禁止的原因…" },
+]
+# [[bans.features]] 可在此精细管控某些 crate 的 feature
+skip       = [
+    # "ansi_term@0.11.0",
+]
+skip-tree  = [
+    # "ansi_term@0.11.0",
+]
+
+#######################################
+# 源 (registry / git) 检查
+#######################################
+[sources]
+unknown-registry = "warn"
+unknown-git      = "warn"
+allow-registry   = ["https://github.com/rust-lang/crates.io-index"]
+allow-git        = []
+
+[sources.allow-org]
+github    = []
+gitlab    = []
+bitbucket = []
