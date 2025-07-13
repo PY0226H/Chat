@@ -1,5 +1,5 @@
 [package]
-name = "template"
+name = "chat"
 version = "0.1.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
@@ -7,3 +7,13 @@ license = "MIT OR Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.98"
+axum = { version = "0.8.4", features = ["http2", "multipart", "query", "tracing"] }
+error = "0.1.9"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_yaml = "0.9.34"
+sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-rustls"] }
+this = "0.3.0"
+tokio = { version = "1.46.1", features = ["rt", "rt-multi-thread", "macros"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
