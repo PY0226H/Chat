@@ -1,4 +1,11 @@
 [default.extend-words]
 
 [files]
-extend-exclude = ["CHANGELOG.md", "notebooks/*"]
+extend-exclude = [
+    "target/",
+    "**/*.rlib",
+    "**/*.o",
+    "**/*.d",
+    "**/*.rmeta",
+    "CHANGELOG.md",
+]
