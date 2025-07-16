@@ -8,12 +8,18 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 anyhow = {workspace = true}
+argon2 = { version = "0.5.3", features = ["std"] }
 axum = {workspace = true}
+chrono = { version = "0.4.41", features = ["serde"] }
 error = {workspace = true}
 serde = {workspace = true}
 serde_yaml = {workspace = true}
-sqlx = {workspace = true}
+sqlx = { workspace = true}
 this = {workspace = true}
+thiserror = {workspace = true}
 tokio = {workspace = true}
 tracing = {workspace = true}
 tracing-subscriber = {workspace = true}
+
+[dev-dependencies]
+sqlx-db-tester = "0.6.0"

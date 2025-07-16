@@ -8,8 +8,14 @@ axum = { version = "0.8.4", features = ["http2", "multipart", "query", "tracing"
 error = "0.1.9"
 serde = { version = "1.0.219", features = ["derive"] }
 serde_yaml = "0.9.33"
-sqlx = { version = "0.8.6", features = ["postgres", "runtime-tokio-rustls"] }
+sqlx = { version = "0.8.6", features = [
+    "chrono",
+    "postgres",
+    "runtime-tokio-rustls",
+    "tls-rustls",
+] }
 this = "0.3.0"
+thiserror = "2.0.12"
 tokio = { version = "1.46.1", features = ["rt", "rt-multi-thread", "macros"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
