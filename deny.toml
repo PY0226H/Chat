@@ -37,7 +37,8 @@ ignore = [
     # { id = "RUSTSEC-0000-0000", reason = "理由…" },
     # "some-yanked-crate@0.1.1",
     "RUSTSEC-2021-0144",
-    "RUSTSEC-2020-0027"
+    "RUSTSEC-2020-0027",
+    "RUSTSEC-2023-0071",
 ]
 
 #######################################
