@@ -1,6 +1,5 @@
 use axum::{Json, response::IntoResponse};
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 use thiserror::Error;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

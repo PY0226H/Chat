@@ -2,11 +2,11 @@ use crate::models::User;
 use crate::user::{CreateUser, SigninUser};
 use crate::{AppError, AppState, ErrorOutput};
 use axum::extract::{Json, State};
-use axum::http::{HeaderMap, HeaderValue, StatusCode};
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
+#[allow(unused)]
 use http_body_util::BodyExt;
 use serde::{Deserialize, Serialize};
-use serde_json::json;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthOutput {
