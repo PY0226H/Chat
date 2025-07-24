@@ -19,6 +19,20 @@ jobs:
       matrix:
         platform: [ubuntu-latest]
     runs-on: ${{ matrix.platform }}
+    services:
+      postgres:
+        image: postgres:14.5
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_USER: chat
+          POSTGRES_PASSWORD: Pyh20010226
+          POSTGRES_DB: chat
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -45,7 +59,7 @@ jobs:
             echo "No tests found, skipping."
           fi
       - name: Generate a changelog
-        uses: orhun/git-cliff-action@v2
+        uses: orhun/git-cliff-action@v4
         id: git-cliff
         if: startsWith(github.ref, 'refs/tags/')
         with:
