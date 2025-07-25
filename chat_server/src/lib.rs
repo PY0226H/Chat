@@ -15,13 +15,12 @@ use sqlx::PgPool;
 use sqlx_db_tester::TestPg;
 use std::{fmt, ops::Deref, sync::Arc};
 
+use crate::middlewares::{set_layer, verify_token};
 pub use config::AppConfig;
 pub use error::{AppError, ErrorOutput};
 use handlers::*;
 pub use models::*;
 use utils::{DecodingKey, EncodingKey};
-
-use crate::middlewares::{set_layer, verify_token};
 #[derive(Clone)]
 pub(crate) struct AppState {
     inner: Arc<AppStateInner>,
@@ -37,6 +36,7 @@ pub(crate) struct AppStateInner {
 pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
     let state = AppState::try_new(config).await?;
     let api = Router::new()
+        .route("/users", get(list_chat_users_handler))
         .route("/chat", get(list_chat_handler).post(create_chat_handler))
         .route(
             "/chat/{id}",
@@ -93,13 +93,16 @@ impl fmt::Debug for AppState {
 #[cfg(test)]
 impl AppState {
     pub async fn new_for_test(config: AppConfig) -> Result<(TestPg, Self), AppError> {
+        use std::path::Path;
+
         use sqlx_db_tester::TestPg;
 
         let dk = DecodingKey::load(&config.auth.pk).context("load pk failed")?;
         let ek = EncodingKey::load(&config.auth.sk).context("load sk failed")?;
+
         let tdb = TestPg::new(
             "postgres://chat:Pyh20010226@localhost:5432".to_string(),
-            std::path::Path::new("../migrations"),
+            Path::new("../migrations"),
         );
         let pool = tdb.get_pool().await;
         let state = Self {

@@ -1,4 +1,3 @@
-#![allow(unused)]
 use crate::{AppError, User};
 use jwt_simple::prelude::*;
 
