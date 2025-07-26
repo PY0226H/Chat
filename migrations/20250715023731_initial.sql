@@ -18,9 +18,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS email_index ON users (email);
 CREATE TYPE chat_type AS ENUM ('single', 'group', 'private_channel', 'public_channel');
 
 --create chat table
-CREATE TABLE chats (
+CREATE TABLE IF NOT EXISTS chats (
     id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(128) NOT NULL UNIQUE,
+    name VARCHAR(64),
     type chat_type NOT NULL,
     -- user id list
     members BIGINT[] NOT NULL,

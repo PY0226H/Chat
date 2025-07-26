@@ -8,4 +8,5 @@ extend-exclude = [
     "**/*.d",
     "**/*.rmeta",
     "CHANGELOG.md",
+    "chat_server/fixtures/*",
 ]

@@ -115,8 +115,8 @@ impl CreateUser {
     pub fn new(workspace: &str, fullname: &str, email: &str, password: &str) -> Self {
         Self {
             fullname: fullname.to_string(),
-            workspace: workspace.to_string(),
             email: email.to_string(),
+            workspace: workspace.to_string(),
             password: password.to_string(),
         }
     }
@@ -134,10 +134,10 @@ impl SigninUser {
 
 #[cfg(test)]
 mod tests {
+    use crate::test_util::get_test_pool;
+
     use super::*;
     use anyhow::Result;
-    use sqlx_db_tester::TestPg;
-    use std::path::Path;
 
     #[test]
     fn hash_password_and_verify_should_work() -> Result<()> {
@@ -151,16 +151,8 @@ mod tests {
 
     #[tokio::test]
     async fn create_duplicate_user_should_fail() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://chat:Pyh20010226@localhost:5432/chat".to_string(),
-            Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
-        let email = "yp@cs.org";
-        let fullname = "yp";
-        let password = "yp51";
-        let input = CreateUser::new("none", fullname, email, password);
-        let _user = User::create(&input, &pool).await?;
+        let (_tdb, pool) = get_test_pool(None).await;
+        let input = CreateUser::new("acme", "Tyr Chen", "tchen@acme.org", "hunter42");
         let ret = User::create(&input, &pool).await;
         match ret {
             Err(AppError::UserAlreadyExists(email)) => {
@@ -173,11 +165,7 @@ mod tests {
 
     #[tokio::test]
     async fn create_user_and_verify_user_should_work() -> Result<()> {
-        let tdb = TestPg::new(
-            "postgres://chat:Pyh20010226@localhost:5432/chat".to_string(),
-            Path::new("../migrations"),
-        );
-        let pool = tdb.get_pool().await;
+        let (_tdb, pool) = get_test_pool(None).await;
         let email = "yp@cs.org";
         let fullname = "yp";
         let password = "yp51";
