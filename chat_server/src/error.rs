@@ -15,6 +15,9 @@ pub enum AppError {
     #[error("sql error: {0}")]
     SqlxError(#[from] sqlx::Error),
 
+    #[error("create chat error: {0}")]
+    CreateChatError(String),
+
     #[error("password hash error: {0}")]
     PasswordHashError(#[from] argon2::password_hash::Error),
 
@@ -23,6 +26,9 @@ pub enum AppError {
 
     #[error("http header parse error: {0}")]
     HttpHeaderError(#[from] axum::http::header::InvalidHeaderValue),
+
+    #[error("not found: {0}")]
+    NotFound(String),
 }
 
 impl ErrorOutput {
@@ -41,6 +47,8 @@ impl IntoResponse for AppError {
             AppError::JwtError(_) => axum::http::StatusCode::FORBIDDEN,
             AppError::HttpHeaderError(_) => axum::http::StatusCode::UNPROCESSABLE_ENTITY,
             AppError::UserAlreadyExists(_) => axum::http::StatusCode::CONFLICT,
+            AppError::CreateChatError(_) => axum::http::StatusCode::BAD_REQUEST,
+            AppError::NotFound(_) => axum::http::StatusCode::NOT_FOUND,
         };
         (status, Json(ErrorOutput::new(self.to_string()))).into_response()
     }

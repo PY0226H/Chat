@@ -8,7 +8,7 @@ use anyhow::Context;
 use axum::{
     Router,
     middleware::from_fn_with_state,
-    routing::{get, patch, post},
+    routing::{get, post},
 };
 use sqlx::PgPool;
 use std::{fmt, ops::Deref, sync::Arc};
@@ -35,14 +35,15 @@ pub async fn get_router(config: AppConfig) -> Result<Router, AppError> {
     let state = AppState::try_new(config).await?;
     let api = Router::new()
         .route("/users", get(list_chat_users_handler))
-        .route("/chat", get(list_chat_handler).post(create_chat_handler))
+        .route("/chats", get(list_chat_handler).post(create_chat_handler))
         .route(
-            "/chat/{id}",
-            patch(update_handler)
+            "/chats/{id}",
+            get(get_chat_handler)
+                .patch(update_chat_handler)
                 .delete(delete_chat_handler)
                 .post(send_message_handler),
         )
-        .route("/chat/{id}/messages", get(list_message_handler))
+        .route("/chats/{id}/messages", get(list_message_handler))
         .layer(from_fn_with_state(state.clone(), verify_token))
         .route("/signin", post(signin_handler))
         .route("/signup", post(signup_handler));

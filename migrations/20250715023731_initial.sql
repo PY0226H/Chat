@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS chats (
     type chat_type NOT NULL,
     -- user id list
     members BIGINT[] NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 --create message table
