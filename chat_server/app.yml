@@ -1,6 +1,7 @@
 server:
   port: 6688
   db_url: "postgres://chat:Pyh20010226@localhost:5432/chat"
+  base_dir: /Users/panyihang/tmp/chat_server
 auth:
   sk: |
     -----BEGIN PRIVATE KEY-----

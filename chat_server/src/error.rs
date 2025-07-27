@@ -29,6 +29,9 @@ pub enum AppError {
 
     #[error("not found: {0}")]
     NotFound(String),
+
+    #[error("io error: {0}")]
+    IoError(#[from] std::io::Error),
 }
 
 impl ErrorOutput {
@@ -49,6 +52,7 @@ impl IntoResponse for AppError {
             AppError::UserAlreadyExists(_) => axum::http::StatusCode::CONFLICT,
             AppError::CreateChatError(_) => axum::http::StatusCode::BAD_REQUEST,
             AppError::NotFound(_) => axum::http::StatusCode::NOT_FOUND,
+            AppError::IoError(_) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
         };
         (status, Json(ErrorOutput::new(self.to_string()))).into_response()
     }
