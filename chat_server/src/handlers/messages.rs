@@ -52,7 +52,7 @@ pub(crate) async fn upload_handler(
     mut multipart: Multipart,
 ) -> Result<impl IntoResponse, AppError> {
     let ws_id = user.ws_id as u64;
-    let base_dir = &state.config.server.base_dir.join(ws_id.to_string());
+    let base_dir = &state.config.server.base_dir;
     let mut files = vec![];
 
     // 添加绝对路径日志
@@ -71,7 +71,7 @@ pub(crate) async fn upload_handler(
             continue;
         };
 
-        let file = ChatFile::new(&filename, &data);
+        let file = ChatFile::new(ws_id, &filename, &data);
         let path = file.path(&base_dir);
 
         // 写入前记录绝对路径
@@ -99,7 +99,7 @@ pub(crate) async fn upload_handler(
             let final_path = path.canonicalize().unwrap_or_else(|_| path.clone());
             info!("✅ File successfully written to: {:?}", final_path);
         }
-        files.push(file.url(ws_id));
+        files.push(file.url());
     }
 
     Ok(Json(files))

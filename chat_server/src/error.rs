@@ -30,8 +30,14 @@ pub enum AppError {
     #[error("not found: {0}")]
     NotFound(String),
 
+    #[error("chat file error: {0}")]
+    ChatFileError(String),
+
     #[error("io error: {0}")]
     IoError(#[from] std::io::Error),
+
+    #[error("create message error: {0}")]
+    CreateMessageError(String),
 }
 
 impl ErrorOutput {
@@ -53,6 +59,8 @@ impl IntoResponse for AppError {
             AppError::CreateChatError(_) => axum::http::StatusCode::BAD_REQUEST,
             AppError::NotFound(_) => axum::http::StatusCode::NOT_FOUND,
             AppError::IoError(_) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            AppError::CreateMessageError(_) => axum::http::StatusCode::BAD_REQUEST,
+            AppError::ChatFileError(_) => axum::http::StatusCode::INTERNAL_SERVER_ERROR,
         };
         (status, Json(ErrorOutput::new(self.to_string()))).into_response()
     }
