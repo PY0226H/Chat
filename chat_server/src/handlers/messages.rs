@@ -72,7 +72,7 @@ pub(crate) async fn upload_handler(
         };
 
         let file = ChatFile::new(ws_id, &filename, &data);
-        let path = file.path(&base_dir);
+        let path = file.path(base_dir);
 
         // 写入前记录绝对路径
         let absolute_path = path

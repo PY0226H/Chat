@@ -1,4 +1,3 @@
-use crate::models::User;
 use crate::user::{CreateUser, SigninUser};
 use crate::{AppError, AppState, ErrorOutput};
 use axum::extract::{Json, State};
@@ -17,7 +16,7 @@ pub(crate) async fn signup_handler(
     Json(input): Json<CreateUser>,
 ) -> Result<impl IntoResponse, AppError> {
     // Handler logic for signing in
-    let user = User::create(&input, &state.pool).await?;
+    let user = state.create_user(&input).await?;
     let token = state.ek.sign(user)?;
     // let mut header = HeaderMap::new();
     // header.insert("X-Token", HeaderValue::from_str(&token)?);
@@ -30,7 +29,7 @@ pub(crate) async fn signin_handler(
     Json(input): Json<SigninUser>,
 ) -> Result<impl IntoResponse, AppError> {
     // Handler logic for signing up
-    let user = User::verify(&input, &state.pool).await?;
+    let user = state.verify_user(&input).await?;
     match user {
         Some(user) => {
             let token = state.ek.sign(user)?;
@@ -46,16 +45,12 @@ pub(crate) async fn signin_handler(
 
 #[cfg(test)]
 mod tests {
-    use anyhow::Result;
-
-    use crate::AppConfig;
-
     use super::*;
+    use anyhow::Result;
 
     #[tokio::test]
     async fn signup_should_work() -> Result<()> {
-        let config = AppConfig::load()?;
-        let (_tdb, state) = AppState::new_for_test(config).await?;
+        let (_tdb, state) = AppState::new_for_test().await?;
         let input = CreateUser::new("none", "YP", "yp51@acme.com", "yp51");
         let ret = signup_handler(State(state), Json(input))
             .await?
@@ -69,8 +64,7 @@ mod tests {
 
     #[tokio::test]
     async fn signup_duplicate_user_should_409() -> Result<()> {
-        let config = AppConfig::load()?;
-        let (_tdb, state) = AppState::new_for_test(config).await?;
+        let (_tdb, state) = AppState::new_for_test().await?;
         let input = CreateUser::new("acme", "YP", "yp51@acme.com", "yp51");
         signup_handler(State(state.clone()), Json(input.clone())).await?;
         let ret = signup_handler(State(state.clone()), Json(input.clone()))
@@ -86,8 +80,7 @@ mod tests {
 
     #[tokio::test]
     async fn signin_should_work() -> Result<()> {
-        let config = AppConfig::load()?;
-        let (_tdb, state) = AppState::new_for_test(config).await?;
+        let (_tdb, state) = AppState::new_for_test().await?;
         let email = "tchen@acme.org";
         let password = "12345678";
 
@@ -104,8 +97,7 @@ mod tests {
 
     #[tokio::test]
     async fn signin_with_non_exist_user_should_403() -> Result<()> {
-        let config = AppConfig::load()?;
-        let (_tdb, state) = AppState::new_for_test(config).await?;
+        let (_tdb, state) = AppState::new_for_test().await?;
         let email = "alice@acme.org";
         let password = "Hunter42";
         let input = SigninUser::new(email, password);
