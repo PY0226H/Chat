@@ -9,6 +9,13 @@ pub struct CreateMessage {
     pub content: String,
     pub files: Vec<String>, // store file paths
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListMessages {
+    pub last_id: Option<u64>,
+    pub limit: u64,
+}
+
 impl AppState {
     pub async fn create_message(
         &self,
@@ -28,9 +35,10 @@ impl AppState {
         for s in &input.files {
             let file = ChatFile::from_str(s)?;
             if !file.path(&base_dir).exists() {
-                return Err(AppError::CreateMessageError(
-                    "File does not exist".to_string(),
-                ));
+                return Err(AppError::CreateMessageError(format!(
+                    "File {} does not exist",
+                    s
+                )));
             }
         }
 
@@ -50,5 +58,101 @@ impl AppState {
         .await?;
 
         Ok(message)
+    }
+
+    pub async fn list_messages(
+        &self,
+        input: ListMessages,
+        chat_id: u64,
+    ) -> Result<Vec<Message>, AppError> {
+        let last_id = input.last_id.unwrap_or(i64::MAX as _);
+        let messages: Vec<Message> = sqlx::query_as(
+            r#"
+            SELECT id, chat_id, sender_id, content, files, created_at
+            FROM messages
+            WHERE chat_id = $1
+            AND id < $2
+            ORDER BY id DESC
+            LIMIT $3
+            "#,
+        )
+        .bind(chat_id as i64)
+        .bind(last_id as i64)
+        .bind(input.limit as i64)
+        .fetch_all(&self.pool)
+        .await?;
+        Ok(messages)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+    use anyhow::Result;
+
+    #[tokio::test]
+    async fn create_message_should_work() -> Result<(), AppError> {
+        let (_tdb, state) = AppState::new_for_test().await?;
+        let input = CreateMessage {
+            content: "Hello, world!".to_string(),
+            files: vec![],
+        };
+        let chat_id = 1; // Assuming chat_id 1 exists
+        let user_id = 1; // Assuming user_id 1 exists
+
+        let message = state.create_message(input, chat_id, user_id).await?;
+        assert_eq!(message.content, "Hello, world!");
+
+        //invalid files should fail
+        let input = CreateMessage {
+            content: "This is a test message".to_string(),
+            files: vec!["/files/1/abc123.txt".to_string()], // Assuming this file does not exist
+        };
+        let result = state.create_message(input, chat_id, user_id).await;
+        assert!(result.is_err());
+
+        //valid files should work
+        let url = upload_dummy_file(&state)?;
+        let input = CreateMessage {
+            content: "This is a test message".to_string(),
+            files: vec![url],
+        };
+        let message = state
+            .create_message(input, 1, 1)
+            .await
+            .expect("create message failed");
+        assert_eq!(message.content, "This is a test message");
+        assert_eq!(message.files.len(), 1);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn list_messages_should_work() -> Result<(), AppError> {
+        let (_tdb, state) = AppState::new_for_test().await?;
+        let input = ListMessages {
+            last_id: None,
+            limit: 6,
+        };
+        let messages = state.list_messages(input, 1).await?;
+        assert_eq!(messages.len(), 6);
+
+        let last_id = messages.last().expect("last message should exist").id;
+        let input = ListMessages {
+            last_id: Some(last_id as _),
+            limit: 6,
+        };
+        let messages = state.list_messages(input, 1).await?;
+        assert_eq!(messages.len(), 4); // No more messages after the last one
+        Ok(())
+    }
+
+    fn upload_dummy_file(state: &AppState) -> Result<String> {
+        let file = ChatFile::new(1, "test.txt", b"hello world");
+        let path = file.path(&state.config.server.base_dir);
+        std::fs::create_dir_all(path.parent().expect("Failed to create parent directory"))?;
+        std::fs::write(&path, b"hello world")?;
+        Ok(file.url())
     }
 }

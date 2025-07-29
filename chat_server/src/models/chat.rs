@@ -85,6 +85,21 @@ impl AppState {
         .await?;
         Ok(chat)
     }
+
+    pub async fn is_chat_member(&self, chat_id: u64, user_id: u64) -> Result<bool, AppError> {
+        let is_member = sqlx::query(
+            r#"
+            SELECT 1
+            FROM chats
+            WHERE id = $1 AND $2 = ANY(members)
+            "#,
+        )
+        .bind(chat_id as i64)
+        .bind(user_id as i64)
+        .fetch_optional(&self.pool)
+        .await?;
+        Ok(is_member.is_some())
+    }
 }
 
 #[cfg(test)]
@@ -156,6 +171,22 @@ mod tests {
         let chats = state.fetch_chats(1).await.expect("fetch all chats failed");
         assert!(!chats.is_empty());
         assert_eq!(chats.len(), 4);
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn chat_is_member_should_work() -> Result<()> {
+        let (_tdb, state) = AppState::new_for_test().await?;
+        let is_member = state
+            .is_chat_member(1, 1)
+            .await
+            .expect("check chat member failed");
+        assert!(is_member);
+        let is_member = state
+            .is_chat_member(1, 6)
+            .await
+            .expect("check chat member failed");
+        assert!(!is_member);
         Ok(())
     }
 }

@@ -1,7 +1,7 @@
 mod auth;
+mod chat;
 mod request_id;
 mod server_time;
-
 use self::request_id::set_request_id;
 use axum::Router;
 use axum::middleware::from_fn;
@@ -15,6 +15,7 @@ use tower_http::{
 use tracing::Level;
 
 pub use auth::verify_token;
+pub use chat::*;
 
 const REQUEST_ID_HEADER: &str = "x-request-id";
 const SERVER_TIME_HEADER: &str = "x-server-time";
