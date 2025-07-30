@@ -3,7 +3,7 @@ use crate::{AppError, AppState, ErrorOutput};
 use axum::extract::{Json, State};
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-#[allow(unused)]
+#[cfg(test)]
 use http_body_util::BodyExt;
 use serde::{Deserialize, Serialize};
 

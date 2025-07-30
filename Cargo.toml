@@ -1,5 +1,5 @@
 [workspace]
-members = ["chat_server", "chat_core", "notify_server"]
+members = ["chat_server", "chat_core", "notify_server", "chat_test"]
 resolver = "2"
 
 [workspace.dependencies]
@@ -17,6 +17,8 @@ sqlx = { version = "0.8.6", features = [
     "tls-rustls",
 ] }
 chat-core = { path = "./chat_core"}
+chat-server = { path = "./chat_server"}
+notify-server = { path = "./notify_server"}
 this = "0.3.0"
 thiserror = "2.0.12"
 tokio = { version = "1.46.1", features = ["rt", "rt-multi-thread", "macros"] }

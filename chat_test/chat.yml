@@ -1,0 +1,13 @@
+server:
+  port: 6688
+  db_url: "postgres://chat:Pyh20010226@localhost:5432/chat"
+  base_dir: /Users/panyihang/tmp/chat_server
+auth:
+  sk: |
+    -----BEGIN PRIVATE KEY-----
+    MC4CAQAwBQYDK2VwBCIEIPEl/RnvU0oPofhjGtaX0oV156Nl+8svwiMd+48CZMbf
+    -----END PRIVATE KEY-----
+  pk: |
+    -----BEGIN PUBLIC KEY-----
+    MCowBQYDK2VwAyEAFARC7oY93dJcza37SJUfz2o1f6u5QgYKa28I6vznFkM=
+    -----END PUBLIC KEY-----
