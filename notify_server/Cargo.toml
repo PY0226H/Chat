@@ -8,6 +8,7 @@ license = "MIT OR Apache-2.0"
 anyhow = {workspace = true}
 axum = {workspace = true}
 axum-extra = { version = "0.10.1", features = ["typed-header"] }
+chat-core = {workspace = true}
 error = {workspace = true}
 futures = "0.3.31"
 serde = {workspace = true}

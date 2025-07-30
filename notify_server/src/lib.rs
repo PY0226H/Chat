@@ -1,7 +1,18 @@
 mod sse;
 use axum::response::IntoResponse;
 use axum::{Router, response::Html, routing::get};
+use chat_core::{Chat, Message};
+use futures::StreamExt;
+use sqlx::postgres::PgListener;
 use sse::sse_handler;
+use tracing::info;
+
+pub enum Event {
+    NewChat(Chat),
+    AddToChat(Chat),
+    RemoveFromChat(Chat),
+    NewMessage(Message),
+}
 
 const INDEX_HTML: &str = include_str!("../index.html");
 pub fn get_router() -> Router {
@@ -12,4 +23,19 @@ pub fn get_router() -> Router {
 
 async fn index_handler() -> impl IntoResponse {
     Html(INDEX_HTML)
+}
+
+pub async fn setup_pg_listener() -> anyhow::Result<()> {
+    let mut listener =
+        PgListener::connect("postgres://chat:Pyh20010226@localhost:5432/chat").await?;
+    listener.listen("chat_updated").await?;
+    listener.listen("chat_message_created").await?;
+    let mut stream = listener.into_stream();
+
+    tokio::spawn(async move {
+        while let Some(Ok(notif)) = stream.next().await {
+            info!("Received notification: {:?}", notif);
+        }
+    });
+    Ok(())
 }

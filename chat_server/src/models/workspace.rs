@@ -1,7 +1,5 @@
-use sqlx::PgPool;
-
-use super::Workspace;
 use crate::{AppError, AppState};
+use chat_core::Workspace;
 
 impl AppState {
     pub async fn create_workspace(&self, name: &str, user_id: u64) -> Result<Workspace, AppError> {
@@ -46,10 +44,11 @@ impl AppState {
         .await?;
         Ok(workspace)
     }
-}
-
-impl Workspace {
-    pub async fn update_owner(&self, owner_id: u64, pool: &PgPool) -> Result<Self, AppError> {
+    pub async fn update_workspace_owner(
+        &self,
+        id: u64,
+        owner_id: u64,
+    ) -> Result<Workspace, AppError> {
         // Update owner_id in two cases: when owner_id is 0 and when it owner's ws_id matches the workspace id
         let workspace = sqlx::query_as(
             r#"
@@ -60,8 +59,8 @@ impl Workspace {
             "#,
         )
         .bind(owner_id as i64)
-        .bind(self.id)
-        .fetch_one(pool)
+        .bind(id as i64)
+        .fetch_one(&self.pool)
         .await?;
         Ok(workspace)
     }
@@ -85,7 +84,9 @@ mod tests {
 
         assert_eq!(user.ws_id, ws.id);
 
-        let ws = ws.update_owner(user.id as _, &state.pool).await?;
+        let ws = state
+            .update_workspace_owner(ws.id as _, user.id as _)
+            .await?;
 
         assert_eq!(ws.owner_id, user.id);
         Ok(())

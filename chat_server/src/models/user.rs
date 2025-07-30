@@ -1,8 +1,9 @@
-use crate::{AppError, AppState, ChatUser, User};
+use crate::{AppError, AppState};
 use argon2::{
     Argon2,
     password_hash::{PasswordHash, PasswordHasher, PasswordVerifier, SaltString, rand_core::OsRng},
 };
+use chat_core::{ChatUser, User};
 use serde::{Deserialize, Serialize};
 use std::mem;
 
@@ -72,7 +73,8 @@ impl AppState {
         .fetch_one(&self.pool)
         .await?;
         if ws.owner_id == 0 {
-            ws.update_owner(user.id as _, &self.pool).await?;
+            self.update_workspace_owner(ws.id as _, user.id as _)
+                .await?;
         }
         Ok(user)
     }
@@ -229,21 +231,5 @@ mod tests {
         let user = user.unwrap();
         assert_eq!(user.id, 1);
         Ok(())
-    }
-}
-
-#[cfg(test)]
-impl User {
-    pub fn new(id: i64, fullname: &str, email: &str) -> Self {
-        use chrono::Utc;
-
-        Self {
-            id,
-            ws_id: 0, // Assuming ws_id is initialized to 0
-            fullname: fullname.to_string(),
-            email: email.to_string(),
-            password_hash: None,
-            created_at: Utc::now(),
-        }
     }
 }
