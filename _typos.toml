@@ -9,4 +9,6 @@ extend-exclude = [
     "**/*.rmeta",
     "CHANGELOG.md",
     "chat_server/fixtures/*",
+    "chat_core/fixtures/*",
+    "notify_server/*.html",
 ]

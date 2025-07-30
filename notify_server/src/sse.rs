@@ -7,7 +7,7 @@ use axum::{
 use axum_extra::{TypedHeader, headers};
 use chat_core::User;
 use futures::stream::Stream;
-use std::convert::Infallible;
+use std::{convert::Infallible, time::Duration};
 use tokio::sync::broadcast;
 use tokio_stream::{StreamExt, wrappers::BroadcastStream};
 use tracing::info;
@@ -24,6 +24,7 @@ pub(crate) async fn sse_handler(
 
     let user_id = user.id as u64;
     let users = &state.users;
+
     let rx = if let Some(tx) = users.get(&user_id) {
         tx.subscribe()
     } else {
@@ -31,6 +32,7 @@ pub(crate) async fn sse_handler(
         state.users.insert(user_id, tx);
         rx
     };
+    info!("User {} subscribed", user_id);
 
     let stream = BroadcastStream::new(rx).filter_map(|v| v.ok()).map(|v| {
         let name = match v.as_ref() {
@@ -45,7 +47,7 @@ pub(crate) async fn sse_handler(
 
     Sse::new(stream).keep_alive(
         axum::response::sse::KeepAlive::new()
-            .interval(std::time::Duration::from_secs(1))
-            .text("ping"),
+            .interval(Duration::from_secs(1))
+            .text("keep-alive-text"),
     )
 }

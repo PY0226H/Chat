@@ -41,25 +41,26 @@ pub async fn setup_pg_listener(state: AppState) -> anyhow::Result<()> {
     let mut listener = PgListener::connect(&state.config.server.db_url).await?;
     listener.listen("chat_updated").await?;
     listener.listen("chat_message_created").await?;
+
     let mut stream = listener.into_stream();
 
     tokio::spawn(async move {
         while let Some(Ok(notif)) = stream.next().await {
             info!("Received notification: {:?}", notif);
             let notification = Notification::load(notif.channel(), notif.payload())?;
-            info!("Parsed notification: {:?}", notification);
             let users = &state.users;
-            info!("Users: {:?}", users);
             for user_id in notification.user_ids {
                 if let Some(tx) = users.get(&user_id) {
+                    info!("Sending notification to user {}", user_id);
                     if let Err(e) = tx.send(notification.event.clone()) {
                         warn!("Failed to send notification to user {}: {}", user_id, e);
                     }
                 }
             }
         }
-        Ok::<(), anyhow::Error>(())
+        Ok::<_, anyhow::Error>(())
     });
+
     Ok(())
 }
 
@@ -68,13 +69,14 @@ impl Notification {
         match r#type {
             "chat_updated" => {
                 let payload: ChatUpdated = serde_json::from_str(payload)?;
+                info!("ChatUpdated: {:?}", payload);
                 let user_ids =
                     get_affected_chat_user_ids(payload.old.as_ref(), payload.new.as_ref());
                 let event = match payload.op.as_str() {
                     "INSERT" => AppEvent::NewChat(payload.new.expect("new should exist")),
                     "UPDATE" => AppEvent::AddToChat(payload.new.expect("new should exist")),
                     "DELETE" => AppEvent::RemoveFromChat(payload.old.expect("old should exist")),
-                    _ => return Err(anyhow::anyhow!("Unknown operation type")),
+                    _ => return Err(anyhow::anyhow!("Invalid operation")),
                 };
                 Ok(Self {
                     user_ids,
@@ -83,13 +85,13 @@ impl Notification {
             }
             "chat_message_created" => {
                 let payload: ChatMessageCreated = serde_json::from_str(payload)?;
-                let user_ids = payload.members.iter().map(|&v| v as u64).collect();
+                let user_ids = payload.members.iter().map(|v| *v as u64).collect();
                 Ok(Self {
                     user_ids,
                     event: Arc::new(AppEvent::NewMessage(payload.message)),
                 })
             }
-            _ => Err(anyhow::anyhow!("Unknown notification type")),
+            _ => Err(anyhow::anyhow!("Invalid notification type")),
         }
     }
 }
@@ -97,7 +99,7 @@ impl Notification {
 fn get_affected_chat_user_ids(old: Option<&Chat>, new: Option<&Chat>) -> HashSet<u64> {
     match (old, new) {
         (Some(old), Some(new)) => {
-            // diff old/new members, if identical, no need to notify, otherwise notify
+            // diff old/new members, if identical, no need to notify, otherwise notify the union of both
             let old_user_ids: HashSet<_> = old.members.iter().map(|v| *v as u64).collect();
             let new_user_ids: HashSet<_> = new.members.iter().map(|v| *v as u64).collect();
             if old_user_ids == new_user_ids {
