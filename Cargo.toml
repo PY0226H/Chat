@@ -26,4 +26,4 @@ tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
 jwt-simple = { version = "0.12.12", default-features = false, features = ["pure-rust"] }
 tower = "0.5.2"
-tower-http = { version = "0.6.6", features = ["compression-full", "fs", "trace"] }
+tower-http = { version = "0.6.6", features = ["compression-full", "fs", "cors", "trace"] }
