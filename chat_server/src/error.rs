@@ -1,8 +1,9 @@
 use axum::{Json, response::IntoResponse};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, ToSchema, Deserialize, Clone)]
 pub struct ErrorOutput {
     pub error: String,
 }

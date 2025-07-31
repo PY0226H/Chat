@@ -1,4 +1,3 @@
-use axum::extract::Multipart;
 use chat_core::{Chat, ChatType, Message};
 use futures::StreamExt;
 use reqwest::multipart::{Form, Part};
@@ -6,7 +5,7 @@ use reqwest_eventsource::{Event, EventSource};
 use serde::Deserialize;
 use serde_json::json;
 use std::{net::SocketAddr, time::Duration};
-use tokio::{net::TcpListener, sync::Notify, time::sleep};
+use tokio::{net::TcpListener, time::sleep};
 
 use anyhow::Result;
 

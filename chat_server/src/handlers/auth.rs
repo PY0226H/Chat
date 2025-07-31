@@ -6,11 +6,20 @@ use axum::response::IntoResponse;
 #[cfg(test)]
 use http_body_util::BodyExt;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, ToSchema, Serialize, Deserialize)]
 pub struct AuthOutput {
     token: String,
 }
+
+#[utoipa::path(
+    post,
+    path = "/api/signup",
+    responses(
+        (status = 200, description = "User created", body = AuthOutput),
+    )
+)]
 pub(crate) async fn signup_handler(
     State(state): State<AppState>,
     Json(input): Json<CreateUser>,
@@ -24,6 +33,13 @@ pub(crate) async fn signup_handler(
     Ok((StatusCode::CREATED, body))
 }
 
+#[utoipa::path(
+    post,
+    path = "/api/signin",
+    responses(
+        (status = 200, description = "User signed in", body = AuthOutput),
+    )
+)]
 pub(crate) async fn signin_handler(
     State(state): State<AppState>,
     Json(input): Json<SigninUser>,
