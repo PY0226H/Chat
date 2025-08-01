@@ -1,71 +1,140 @@
-### signup user1
 
+### ========================================
+### 用户注册测试
+### ========================================
+
+### 注册用户 - Tyr Chen
 POST http://localhost:6688/api/signup
 Content-Type: application/json
 
 {
-    "workspace": "acme",
-    "fullname": "YP",
-    "email": "yp51@acme.org",
-    "password": "12345678"
+  "workspace": "acme",
+  "fullname": "Tyr Chen",
+  "email": "tchen@acme.org",
+  "password": "123456"
 }
 
-### signup user2
+### 注册用户 - Alice Chen
 POST http://localhost:6688/api/signup
 Content-Type: application/json
 
 {
-    "workspace": "acme",
-    "fullname": "YP1",
-    "email": "yp511@acme.org",
-    "password": "12345678"
+  "workspace": "acme",
+  "fullname": "Alice Chen",
+  "email": "alice@acme.org",
+  "password": "123456"
 }
 
-### signin user (valid)
+### 注册用户 - Bob Hua
+POST http://localhost:6688/api/signup
+Content-Type: application/json
+
+{
+  "workspace": "acme",
+  "fullname": "Bob Hua",
+  "email": "bob@acme.org",
+  "password": "123456"
+}
+
+### ========================================
+### 用户登录测试
+### ========================================
+
+### 登录失败 - 错误密码
+POST http://localhost:6688/api/signin
+Content-Type: application/json
+
+{
+  "email": "tchen@acme.org",
+  "password": "a123456"
+}
+
+### 登录成功 - Tyr Chen
 # @name signin
 POST http://localhost:6688/api/signin
 Content-Type: application/json
 
 {
-    "email": "yp51@acme.org",
-    "password": "12345678"
+  "email": "tchen@acme.org",
+  "password": "123456"
 }
 
 @token = {{signin.response.body.token}}
 
-### signin user (invalid)
+### 登录成功 - Bob Hua
+# @name signin1
 POST http://localhost:6688/api/signin
 Content-Type: application/json
 
 {
-    "email": "yp51@acme.org",
-    "password": "wrongpassword"
+  "email": "bob@acme.org",
+  "password": "123456"
 }
 
-### create chat
+@token1 = {{signin1.response.body.token}}
+
+### ========================================
+### 聊天管理测试
+### ========================================
+
+### 创建群聊 - Project X
 POST http://localhost:6688/api/chats
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "name": "acme",
-    "members": [1, 2],
-    "public": false
+  "name": "project X",
+  "members": [1, 2],
+  "public": false
 }
 
-### get chat list
+### 创建私聊
+POST http://localhost:6688/api/chats
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "members": [1, 2],
+  "public": false
+}
+
+### 创建群聊 - Project Y (不包含当前用户)
+POST http://localhost:6688/api/chats
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "name": "project Y",
+  "members": [2, 3],
+  "public": false
+}
+
+### 创建私聊 (不包含当前用户)
+POST http://localhost:6688/api/chats
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "members": [2, 3],
+  "public": false
+}
+
+### 获取聊天列表
 GET http://localhost:6688/api/chats
 Authorization: Bearer {{token}}
 
-### get user list
+### 获取用户列表
 GET http://localhost:6688/api/users
 Authorization: Bearer {{token}}
 
-### upload files
+### ========================================
+### 文件上传测试
+### ========================================
+
+### 上传多个文件
 POST http://localhost:6688/api/upload
 Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=MyBoundary
-
 
 --MyBoundary
 Content-Disposition: form-data; filename="letter.png"
@@ -73,26 +142,30 @@ Content-Type: application/octet-stream
 
 < /Users/panyihang/snapshots/letter.png
 --MyBoundary
-Content-Disposition: form-data; filename = "hello.txt"
+Content-Disposition: form-data; filename="hello.txt"
 Content-Type: text/plain
 
 Hello, World!
 --MyBoundary--
 
-### get files
+### 获取文件
 GET http://localhost:6688/api/files/1/9ad/197/bec5f1f4d66999cf43d2f493d5dc3c5c06.png
 Authorization: Bearer {{token}}
 
-### send a message
+### ========================================
+### 消息管理测试
+### ========================================
+
+### 发送消息
 POST http://localhost:6688/api/chats/1
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-    "content": "Hello, World!",
-    "files": []
+  "content": "Hello, World!",
+  "files": []
 }
 
-### get messages
+### 获取消息列表 (分页)
 GET http://localhost:6688/api/chats/1/messages?limit=6&last_id=5
 Authorization: Bearer {{token}}
