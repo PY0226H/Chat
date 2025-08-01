@@ -13,6 +13,7 @@ use chat_core::{ChatUser, User};
         ("token" = [])
     )
 )]
+/// List all users in the workspace.
 pub(crate) async fn list_chat_users_handler(
     Extension(user): Extension<User>,
     State(state): State<AppState>,
